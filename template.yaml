@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  finance-app
+  Personal finance automation — AWS compute layer
+
+# ============================================================
+# Globals — applied to all Lambda functions unless overridden
+# ============================================================
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures:
+      - arm64
+    MemorySize: 256
+    Timeout: 30
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+# ============================================================
+# Parameters
+# ============================================================
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Deployment environment
+
+# ============================================================
+# Resources — Functions are added in Milestones C onwards
+# ============================================================
+Resources:
+  ApplicationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/finance/${Environment}/application"
+      RetentionInDays: 30
+
+# ============================================================
+# Outputs
+# ============================================================
+Outputs:
+  Environment:
+    Description: Deployment environment
+    Value: !Ref Environment

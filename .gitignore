@@ -1,0 +1,93 @@
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-log.txt
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.log
+
+# ============================================================
+# AWS / SAM
+# ============================================================
+.aws-sam/
+samconfig.toml.bak
+*.zip
+
+# ============================================================
+# Secrets — NEVER commit these
+# ============================================================
+*.json.key
+*-key.json
+*_key.json
+drive-reader*.json
+.env
+.env.local
+.env.*.local
+secrets/
+.secrets
+
+# ============================================================
+# Node / PWA
+# ============================================================
+pwa/node_modules/
+pwa/dist/
+pwa/.vite/
+pwa/.env
+pwa/.env.local
+pwa/.env.production
+node_modules/
+
+# ============================================================
+# macOS
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ============================================================
+# IDE
+# ============================================================
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# Amplify
+# ============================================================
+amplify/#current-cloud-backend
+amplify/.config/local-*
+amplify/logs
+amplify/mock-data
+amplify/backend/amplify-meta.json
+amplify/backend/.temp
+.amplify/
+
+# ============================================================
+# Misc
+# ============================================================
+*.tfstate
+*.tfstate.backup
+.terraform/
+env.json

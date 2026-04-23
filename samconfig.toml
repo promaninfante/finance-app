@@ -1,0 +1,23 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "finance-app"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+region = "eu-west-1"
+
+[default.deploy.parameters]
+region                    = "eu-west-1"
+capabilities              = "CAPABILITY_IAM"
+confirm_changeset         = true
+resolve_s3                = true
+s3_prefix                 = "finance-app"
+profile                   = "finance"
+
+[default.sync.parameters]
+watch = true
