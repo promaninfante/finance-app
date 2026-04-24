@@ -32,7 +32,7 @@ Parameters:
     Description: Deployment environment
 
 # ============================================================
-# Resources — Functions are added in Milestones C onwards
+# Resources
 # ============================================================
 Resources:
   ApplicationLogGroup:
@@ -41,6 +41,31 @@ Resources:
       LogGroupName: !Sub "/finance/${Environment}/application"
       RetentionInDays: 30
 
+  # ----------------------------------------------------------
+  # C: Ingest — triggered by Google Apps Script Drive poller
+  # ----------------------------------------------------------
+  IngestStatementFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "finance-ingest-${Environment}"
+      CodeUri: src/ingest/
+      Handler: app.handler
+      MemorySize: 1024
+      Timeout: 300
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - POST
+      Policies:
+        - SSMParameterWithSlashPrefixReadPolicy:
+            ParameterName: "finance/*"
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+
 # ============================================================
 # Outputs
 # ============================================================
@@ -48,3 +73,7 @@ Outputs:
   Environment:
     Description: Deployment environment
     Value: !Ref Environment
+
+  IngestFunctionUrl:
+    Description: Function URL for the ingest Lambda (paste into Apps Script Properties)
+    Value: !GetAtt IngestStatementFnUrl.FunctionUrl
