@@ -5,6 +5,7 @@ import logging
 from shared.ssm import load_secrets
 from shared.supabase_client import SupabaseClient, SupabaseError
 from .drive import DriveFileNotFoundError, DrivePermissionError, fetch_drive_file
+from .extract import build_tx_row, extract_transactions
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -57,7 +58,20 @@ def handler(event: dict, context) -> dict:
         pdf_bytes = fetch_drive_file(drive_file_id, secrets["google_service_account_json"])
         logger.info("Downloaded %d bytes for statement %s", len(pdf_bytes), statement_id)
 
-        # Milestone D will parse pdf_bytes into transactions here.
+        # --- D: extract transactions and insert with dedup ---
+        raw_transactions = extract_transactions(pdf_bytes, secrets)
+        inserted = 0
+        for raw_tx in raw_transactions:
+            row = build_tx_row(raw_tx, user_id, statement_id, account_id)
+            try:
+                db.insert("transactions", row)
+                inserted += 1
+            except SupabaseError as exc:
+                if exc.status_code == 409:
+                    logger.debug("Duplicate tx_hash %s — skipping", row["tx_hash"])
+                else:
+                    raise
+        logger.info("Inserted %d/%d transactions for statement %s", inserted, len(raw_transactions), statement_id)
 
         db.update("statements", {"id": statement_id}, {
             "status":       "done",

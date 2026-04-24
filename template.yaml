@@ -62,6 +62,12 @@ Resources:
       Policies:
         - SSMParameterWithSlashPrefixReadPolicy:
             ParameterName: "finance/*"
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource:
+                - "arn:aws:bedrock:*::foundation-model/*"
+                - "arn:aws:bedrock:eu-west-1:*:inference-profile/*"
       Environment:
         Variables:
           ENVIRONMENT: !Ref Environment
