@@ -56,9 +56,9 @@ finance-app/
 ## Milestone progress
 
 - [x] **A** — Foundations & Scaffolding
-- [ ] **B** — Database schema (Supabase)
-- [ ] **C** — Ingestion happy path
-- [ ] **D** — PDF extraction
+- [x] **B** — Database schema (Supabase)
+- [x] **C** — Ingestion happy path
+- [x] **D** — PDF extraction
 - [ ] **E** — Classification
 - [ ] **F** — Review PWA
 - [ ] **G** — Dashboard
