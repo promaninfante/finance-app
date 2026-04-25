@@ -4,6 +4,7 @@ import logging
 
 from shared.ssm import load_secrets
 from shared.supabase_client import SupabaseClient, SupabaseError
+from .classify import classify_transactions
 from .drive import DriveFileNotFoundError, DrivePermissionError, fetch_drive_file
 from .extract import build_tx_row, extract_transactions
 
@@ -58,10 +59,11 @@ def handler(event: dict, context) -> dict:
         pdf_bytes = fetch_drive_file(drive_file_id, secrets["google_service_account_json"])
         logger.info("Downloaded %d bytes for statement %s", len(pdf_bytes), statement_id)
 
-        # --- D: extract transactions and insert with dedup ---
+        # --- D+E: extract, classify, and insert transactions with dedup ---
         raw_transactions = extract_transactions(pdf_bytes, secrets)
+        classified_txs = classify_transactions(raw_transactions, user_id, db, secrets)
         inserted = 0
-        for raw_tx in raw_transactions:
+        for raw_tx in classified_txs:
             row = build_tx_row(raw_tx, user_id, statement_id, account_id)
             try:
                 db.insert("transactions", row)
@@ -71,7 +73,7 @@ def handler(event: dict, context) -> dict:
                     logger.debug("Duplicate tx_hash %s — skipping", row["tx_hash"])
                 else:
                     raise
-        logger.info("Inserted %d/%d transactions for statement %s", inserted, len(raw_transactions), statement_id)
+        logger.info("Inserted %d/%d transactions for statement %s", inserted, len(classified_txs), statement_id)
 
         db.update("statements", {"id": statement_id}, {
             "status":       "done",

@@ -63,6 +63,35 @@ class SupabaseClient:
         rows = response.json()
         return rows[0] if rows else None
 
+    def select_many(
+        self,
+        table: str,
+        filters: dict[str, str] | None = None,
+        order: str | None = None,
+    ) -> list[dict]:
+        """GET all rows matching PostgREST filter expressions.
+
+        filters: {column: "operator.value"} e.g. {"user_id": "eq.abc", "user_confirmed": "eq.true"}
+                 Use key "or" for OR: {"or": "(user_id.is.null,user_id.eq.abc)"}
+                 httpx percent-encodes parens; PostgREST decodes them correctly.
+        order:   PostgREST order string e.g. "priority.desc"
+        Returns empty list when no rows match.
+        """
+        params: dict[str, str] = dict(filters or {})
+        if order:
+            params["order"] = order
+        response = self._client.get(f"{self._base}/{table}", params=params)
+        self._raise(response)
+        return response.json()
+
+    def rpc(self, func: str, args: dict | None = None) -> None:
+        """Call a Postgres function via PostgREST RPC. Returns None (fire-and-forget)."""
+        response = self._client.post(
+            f"{self._base}/rpc/{func}",
+            json=args or {},
+        )
+        self._raise(response)
+
     def _raise(self, response: httpx.Response) -> None:
         if response.is_error:
             raise SupabaseError(

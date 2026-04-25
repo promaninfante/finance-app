@@ -48,17 +48,19 @@ def build_tx_row(
     statement_id: str,
     account_id: str,
 ) -> dict:
-    """Convert a raw extracted transaction dict into a DB-ready row."""
-    date = raw["date"]
+    """Convert a raw extracted (and classified) transaction dict into a DB-ready row."""
+    date        = raw["date"]
     description = raw["description"]
-    amount = round(float(raw["amount"]), 2)
-    currency = raw.get("currency", "EUR").upper()
+    amount      = round(float(raw["amount"]), 2)
+    currency    = raw.get("currency", "EUR").upper()
+    category_id = raw.get("category_id")
+    source      = raw.get("classification_source", "llm")
 
     tx_hash = hashlib.sha256(
         f"{account_id}|{date}|{amount:.2f}|{description}".encode()
     ).hexdigest()
 
-    return {
+    row = {
         "user_id":               user_id,
         "statement_id":          statement_id,
         "account_id":            account_id,
@@ -66,10 +68,14 @@ def build_tx_row(
         "description":           description,
         "amount":                amount,
         "currency":              currency,
-        "classification_source": "llm",
-        "is_reviewed":           False,
+        "classification_source": source,
+        "is_reviewed":           source == "rule",
         "tx_hash":               tx_hash,
     }
+    if category_id is not None:
+        row["category_id"]          = category_id
+        row["original_category_id"] = category_id
+    return row
 
 
 def _extract_text(pdf_bytes: bytes) -> str:
